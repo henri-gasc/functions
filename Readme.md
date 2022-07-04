@@ -3,7 +3,8 @@
 ## Information
 
 You will need to create a `GITDIR` variable which point to the root of all git repo.  
-Use `update_git` (without arguments) to update all repositories (and sub-repo) found in `GITDIR`, whereas use `update_git repo1 repo2 ...` to update only them.
+Use `update_git` (without arguments) to update all repositories (and sub-repo) found in `GITDIR`, whereas use `update_git repo1 repo2 ...` to update only them.  
+/!\ The root is considered to be `GITDIR`, if you want to update a project that is in a subdirectory of `GITDIR` or one that is 'next' to it, you need to use the path relative to `GITDIR`.
 
 ## Installation
 
