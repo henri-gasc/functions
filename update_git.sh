@@ -12,22 +12,24 @@ pull_if_git_repo() {
 
 loop() {
     pull_if_git_repo
-    for d in $(ls -d -- */); do
-        builtin cd "$d"
-        git rev-parse 2>/dev/null
-        if [ $? -eq 0 ]; then loop
-        else
-            echo "git pull $d"
-            tag=$(git describe --tags --abbrev=0) 2>/dev/null
-            pull_if_git_repo
-            new_tag=$(git describe --tags --abbrev=0) 2>/dev/null
-            if [ $? -eq 0 ] && [ $new_tag != $tag ]; then
-                echo "$d : $tag -> $new_tag" >> ../repoUpdated.txt
+    for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
+        if [ "$d" != "./.git" ]; then
+            builtin cd "$d"
+            git rev-parse 2>/dev/null
+            if [ $? -eq 0 ]; then loop
+            else
+                echo "git pull $d"
+                tag=$(git describe --tags --abbrev=0) 2>/dev/null
+                pull_if_git_repo
+                new_tag=$(git describe --tags --abbrev=0) 2>/dev/null
+                if [ $? -eq 0 ] && [ $new_tag != $tag ]; then
+                    echo "$d : $tag -> $new_tag" >> ../repoUpdated.txt
+                fi
+                builtin cd ".."
+                echo ""
             fi
             builtin cd ".."
-            echo ""
         fi
-        builtin cd ".."
     done
 }
 
