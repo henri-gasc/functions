@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 pull_if_git_repo() {
     git rev-parse 2>/dev/null
@@ -11,7 +11,8 @@ pull_if_git_repo() {
 }
 
 loop() {
-    for d in $(dir); do
+    pull_if_git_repo
+    for d in $(ls -d -- */); do
         builtin cd "$d"
         git rev-parse 2>/dev/null
         if [ $? -eq 0 ]; then loop
@@ -31,7 +32,7 @@ loop() {
 }
 
 builtin cd "$GITDIR"
-if [ "$*" != "" ]; then
+if [ "$@" != "" ]; then
     for d in "$@"; do
         builtin cd "$d"
         loop

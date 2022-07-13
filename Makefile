@@ -1,5 +1,6 @@
-PREFIX = /usr/bin
-NAME = update_git
+PREFIX = $(HOME)/.local/bin
 
 install:
-	cp update_git.sh $(PREFIX)/$(NAME)
+	chmod +x *_git.sh
+	cp update_git.sh $(PREFIX)/update_git
+	cp clean_git.sh $(PREFIX)/clean_git
