@@ -2,10 +2,10 @@
 
 clean() {
     echo "$1"
-    before=$(du -sh)
+    before="$(du -sh . | cut -f 1)"
     git gc --aggressive
-    after=$(du -sh)
-    echo "$1: ${before%	*} -> ${after%	*}"
+    after="$(du -sh . | cut -f 1)"
+    echo "$1: $before -> $after"
     echo ""
 }
 
@@ -28,9 +28,14 @@ loop() {
 
 builtin cd "$GITDIR"
 if [[ "$@" == "" ]]; then
+    before="$(du -sh . | cut -f 1)"
     loop "."
+    after="$(du -sh . | cut -f 1)"
 else
+    before="$(du -shc $@ | tail -n 1 | cut -f 1)"
     for d in "$@"; do
         loop "$d"
     done
+    after="$(du -shc $@ | tail -n 1 | cut -f 1)"
 fi
+echo "From $before to $after"
