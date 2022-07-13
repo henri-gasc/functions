@@ -1,53 +1,53 @@
 #!/usr/bin/env bash
 
-pull_if_git_repo() {
-    git rev-parse 2>/dev/null
-    if [ $? -eq 0 ]; then
-        trash=`git stash && git clean -d -f`
-        git fetch
-        git pull
-        git submodule update --recursive
-    fi
+pull_git_repo() {
+    trash=`git stash && git clean -d -f`
+    git fetch
+    git pull
+    git submodule update --recursive
 }
 
 loop() {
-    pull_if_git_repo
-    for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
-        if [ "$d" != "./.git" ]; then
+    git rev-parse 2>/dev/null
+    if [ $? -eq 0 ]; then
+        echo "git pull $1"
+        pull_git_repo
+    else
+        for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
             builtin cd "$d"
             git rev-parse 2>/dev/null
-            if [ $? -eq 0 ]; then loop
-            else
+            if [ $? -eq 0 ]; then
                 echo "git pull $d"
                 tag=$(git describe --tags --abbrev=0) 2>/dev/null
-                pull_if_git_repo
+                pull_git_repo
                 new_tag=$(git describe --tags --abbrev=0) 2>/dev/null
-                if [ $? -eq 0 ] && [ $new_tag != $tag ]; then
-                    echo "$d : $tag -> $new_tag" >> ../repoUpdated.txt
+                if [ $? -eq 0 ] && [ "$new_tag" != "$tag" ]; then
+                    echo "$d : $tag -> $new_tag" >> $GITDIR/../repoUpdated.txt
                 fi
-                builtin cd ".."
                 echo ""
+            else
+                loop
             fi
             builtin cd ".."
-        fi
-    done
+        done
+    fi
 }
 
 builtin cd "$GITDIR"
-if [ "$@" != "" ]; then
+if [[ "$@" != "" ]]; then
     for d in "$@"; do
         builtin cd "$d"
-        loop
+        loop "$d"
         builtin cd ".."
     done
 else
-    touch "repoUpdated.txt"
+    touch "../repoUpdated.txt"
     loop
-    if [ "$(cat repoUpdated.txt)" == "" ]; then
+    if [ "$(cat ../repoUpdated.txt)" == "" ]; then
         echo "No update were detected"
     else
         echo "The following repositories were updated:"
-        cat repoUpdated.txt
-        rm repoUpdated.txt
+        cat ../repoUpdated.txt
+        rm ../repoUpdated.txt
     fi
 fi
