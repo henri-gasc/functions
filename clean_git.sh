@@ -1,36 +1,36 @@
 #!/usr/bin/env bash
 
 clean() {
-    git rev-parse 2>/dev/null
-    if [ $? -eq 0 ]; then
-        echo "$1"
-        before=$(du -sh)
-        git gc --aggressive
-        after=$(du -sh)
-        echo "$1: ${before%	*} -> ${after%	*}"
-        builtin cd ".."
-        echo ""
-    else
-        loop
-    fi
+    echo "$1"
+    before=$(du -sh)
+    git gc --aggressive
+    after=$(du -sh)
+    echo "$1: ${before%	*} -> ${after%	*}"
+    echo ""
 }
 
 loop() {
-    clean
-    for d in $(ls -d -- */); do
-        builtin cd "$d"
-        clean
-        builtin cd ".."
-    done
+    builtin cd "$1"
+    git rev-parse 2>/dev/null
+    if [ $? -eq 0 ]; then
+        clean "$1"
+    else
+        for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
+            if [ "$d" != "./.git" ]; then
+                builtin cd "$d"
+                clean "$d"
+                builtin cd ".."
+            fi
+        done
+    fi
+    builtin cd ".."
 }
 
 builtin cd "$GITDIR"
-if [ "$@" != "" ]; then
-    for d in "$@"; do
-        builtin cd "$d"
-        loop
-        builtin cd ".."
-    done
+if [[ "$@" == "" ]]; then
+    loop "."
 else
-    loop
+    for d in "$@"; do
+        loop "$d"
+    done
 fi
