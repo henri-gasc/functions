@@ -17,9 +17,7 @@ loop() {
     else
         for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
             if [ "$d" != "./.git" ]; then
-                builtin cd "$d"
-                clean "$d"
-                builtin cd ".."
+                loop "$d"
             fi
         done
     fi
@@ -28,14 +26,14 @@ loop() {
 
 builtin cd "$GITDIR"
 if [[ "$@" == "" ]]; then
-    before="$(du -sh . | cut -f 1)"
+    before_g="$(du -sh . | cut -f 1)"
     loop "."
-    after="$(du -sh . | cut -f 1)"
+    after_g="$(du -sh . | cut -f 1)"
 else
-    before="$(du -shc $@ | tail -n 1 | cut -f 1)"
+    before_g="$(du -shc $@ | tail -n 1 | cut -f 1)"
     for d in "$@"; do
         loop "$d"
     done
-    after="$(du -shc $@ | tail -n 1 | cut -f 1)"
+    after_g="$(du -shc $@ | tail -n 1 | cut -f 1)"
 fi
-echo "From $before to $after"
+echo "From $before_g to $after_g"
