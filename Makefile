@@ -1,6 +1,7 @@
-PREFIX = $(HOME)/.local/bin
+PREFIX="$(HOME)/.local/bin"
 
 install:
-	chmod +x *_git.sh
-	cp update_git.sh $(PREFIX)/update_git
-	cp clean_git.sh $(PREFIX)/clean_git
+	chmod +x *.sh
+	for f in *.sh; do \
+		cp $$f "$(PREFIX)/$$(echo $$f | sed 's/\.sh//')"; \
+	done
