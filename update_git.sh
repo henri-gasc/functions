@@ -18,9 +18,9 @@ loop() {
             git rev-parse 2>/dev/null
             if [ $? -eq 0 ]; then
                 echo "git pull $d"
-                tag=$(git describe --tags --abbrev=0) 2>/dev/null
+                tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
                 pull_git_repo
-                new_tag=$(git describe --tags --abbrev=0) 2>/dev/null
+                new_tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
                 if [ $? -eq 0 ] && [ "$new_tag" != "$tag" ]; then
                     echo "$d : $tag -> $new_tag" >> $GITDIR/../repoUpdated.txt
                 fi
