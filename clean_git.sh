@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
+get_size() {
+    du -shck . | tail -n 1 | cut -f 1
+}
+
 clean() {
     echo "$1"
-    before="$(du -sh . | cut -f 1)"
+    before="$(get_size)"
     git gc --aggressive
-    after="$(du -sh . | cut -f 1)"
-    echo "$1: $before -> $after"
+    after="$(get_size)"
+    echo "$1: ${before}k -> ${after}k"
     echo ""
 }
 
@@ -26,14 +30,14 @@ loop() {
 
 builtin cd "$GITDIR"
 if [[ "$@" == "" ]]; then
-    before_g="$(du -sh . | cut -f 1)"
+    before_g="$(get_size)"
     loop "."
-    after_g="$(du -sh . | cut -f 1)"
+    after_g="$(get_size)"
 else
-    before_g="$(du -shc $@ | tail -n 1 | cut -f 1)"
+    before_g="$(get_size)"
     for d in "$@"; do
         loop "$d"
     done
-    after_g="$(du -shc $@ | tail -n 1 | cut -f 1)"
+    after_g="$(get_size)"
 fi
-echo "From $before_g to $after_g"
+echo "Saved $((${before_g} - ${after_g}))k (${before_g}k -> ${after_g})k"
