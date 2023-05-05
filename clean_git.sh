@@ -7,6 +7,7 @@ get_size() {
 clean() {
     echo "$1"
     before="$(get_size)"
+    git clean -dfx
     git gc --aggressive
     after="$(get_size)"
     echo "$1: ${before}k -> ${after}k"
