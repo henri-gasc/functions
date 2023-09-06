@@ -56,7 +56,7 @@ def format(module: str) -> str:
 
 
 def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str]]]:
-    """Print the list"""
+    """Return the list of module in import statements that could not be found in an empty environment"""
     import_statements = []
     list_files = list_files_in(dir_to_search)
 
@@ -73,12 +73,14 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
                 # In the first two cases, xxx is the second word
                 # In the second two, xxx is the first part of the second word
                 if '"' in statement:
-                    continue
-                module_name = statement.split(" ")[1]
+                    module_name = ""
+                else:
+                    module_name = statement.split(" ")[1]
                 if "." in module_name:
                     # Allow to also skip the 'from .abc ...' statements
                     module_name = module_name.split(".")[0]
-                import_statements.append(module_name.lower())
+                if module_name != "":
+                    import_statements.append(module_name.lower())
         f.close()
 
     if "importlib" in import_statements:
@@ -107,9 +109,11 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
 def print_unknow_import(dir_to_search: str) -> None:
     import_statements, requirements_txt = get_unknow_import(dir_to_search)
     print(f"The dependencies for {os.path.realpath(dir_to_search)} are:")
-    print("\n".join(import_statements))
+    for dep in import_statements:
+        print(dep)
 
-    print(f"\nAdditionally, there are those requirements as well:")
+    if len(requirements_txt) != 0:
+        print(f"\nAdditionally, there are those requirements as well:")
     for f in requirements_txt:
         print(f"  from {f}:")
         for m in requirements_txt[f]:
@@ -117,4 +121,4 @@ def print_unknow_import(dir_to_search: str) -> None:
 
 
 if __name__ == "__main__":
-    get_unknow_import(sys.argv[1])
+    print_unknow_import(sys.argv[1])
