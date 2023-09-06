@@ -65,6 +65,7 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
         for line in f:
             if "import " in line:
                 statement = line.strip()
+                module_name = None
                 # The statement can be as follow (we want the xxx):
                 # - from xxx import ... (as ...)
                 # - import xxx (as ...)
@@ -72,9 +73,12 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
                 # - import xxx.abc (as ...)
                 # In the first two cases, xxx is the second word
                 # In the second two, xxx is the first part of the second word
-                if '"' in statement:
+                for symb in ['"', "=", ":"]:
+                    if symb in statement:
+                        module_name = ""
+                if statement[0] == "#" or statement[0:3] == ">>>":
                     module_name = ""
-                else:
+                if module_name is None:
                     module_name = statement.split(" ")[1]
                 if "." in module_name:
                     # Allow to also skip the 'from .abc ...' statements
