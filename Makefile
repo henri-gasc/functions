@@ -5,3 +5,6 @@ install:
 	for f in *.sh; do \
 		cp $$f "$(PREFIX)/$$(echo $$f | sed 's/\.sh//')"; \
 	done
+	for f in *.py; do \
+		cp $$f "$(PREFIX)/$$(echo $$f | sed 's/\.py//')"; \
+	done
