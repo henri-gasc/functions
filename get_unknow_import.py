@@ -66,18 +66,28 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
             if "import " in line:
                 statement = line.strip()
                 module_name = None
-                # The statement can be as follow (we want the xxx):
+                # If one of those symbols is present, we don't want the line
+                for symb in ['"', "=", ":"]:
+                    if symb in statement:
+                        module_name = ""
+                # If it's a comment or a test, we don't want it either
+                if statement[0] == "#" or statement[0:3] == ">>>":
+                    module_name = ""
+                # If the line does not have 'from' but 'import' is not the first word, don't wanna
+                if statement.find("from") == -1 and statement[0:6] != "import":
+                    module_name = ""
+                # If 'from' is after 'import', same situation
+                if statement.find("from") > statement.find("import"):
+                    module_name = ""
+
+                # The (valid) statements can be as follow (we want the xxx):
                 # - from xxx import ... (as ...)
                 # - import xxx (as ...)
                 # - from xxx.abc import ... (as ...)
                 # - import xxx.abc (as ...)
                 # In the first two cases, xxx is the second word
                 # In the second two, xxx is the first part of the second word
-                for symb in ['"', "=", ":"]:
-                    if symb in statement:
-                        module_name = ""
-                if statement[0] == "#" or statement[0:3] == ">>>":
-                    module_name = ""
+
                 if module_name is None:
                     module_name = statement.split(" ")[1]
                 if "." in module_name:
@@ -85,6 +95,8 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
                     module_name = module_name.split(".")[0]
                 if module_name != "":
                     import_statements.append(module_name.lower())
+                if module_name.lower() == "raised":
+                    print(statement)
         f.close()
 
     if "importlib" in import_statements:
