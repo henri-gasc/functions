@@ -5,7 +5,11 @@ l_u="$(users)"
 for back_user in $(echo -e "${l_u// /\\n}" | sort -u); do
   NOW=$(date +"%Y-%m-%d_%H:%M:%S")
   snapshot_path="/home/${back_user}/.cache/snapshots"
-  if [ ! -e "${snapshot_path}" ]; then
+  if test -e "${snapshot_path}/.no"; then
+    echo "Not saving user ${back_user}"
+    continue
+  fi
+  if test ! -e "${snapshot_path}"; then
     mkdir -p "${snapshot_path}"
   fi
  
