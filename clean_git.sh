@@ -9,6 +9,9 @@ clean() {
     before="$(get_size)"
     git clean -dfx
     git gc --aggressive
+    git submodule foreach git gc --aggressive
+    git repack -Ad
+    git prune
     after="$(get_size)"
     echo "$1: ${before}k -> ${after}k"
     echo ""
@@ -26,14 +29,18 @@ loop() {
             fi
         done
     fi
-    builtin cd ".."
+    if [[ "$1" != "." ]]; then
+        builtin cd ".."
+    fi
 }
 
-builtin cd "$GITDIR"
 if [[ "$@" == "" ]]; then
+    base_path="$(pwd)"
+    builtin cd "${GITDIR}"
     before_g="$(get_size)"
     loop "."
     after_g="$(get_size)"
+    builtin cd "${base_path}"
 else
     before_g="$(get_size)"
     for d in "$@"; do
