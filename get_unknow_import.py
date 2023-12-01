@@ -134,7 +134,7 @@ def print_unknow_import(dir_to_search: str) -> None:
     for f in requirements_txt:
         print(f"  from {f}:")
         for m in requirements_txt[f]:
-            print(f"    dev-python/{m}")
+            print(f"    {m}")
 
 
 if __name__ == "__main__":
