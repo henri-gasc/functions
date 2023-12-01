@@ -51,7 +51,7 @@ def format(module: str) -> str:
         importlib.import_module(module)
         out = ""
     except ModuleNotFoundError:
-        out = f"dev-python/{module}" + "[${PYTHON_USEDEP}]"
+        out = f"dev-python/{module.strip()}" + "[${PYTHON_USEDEP}]"
     return out
 
 
@@ -70,6 +70,7 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
                 for symb in ['"', "=", ":"]:
                     if symb in statement:
                         module_name = ""
+                        break
                 # If it's a comment or a test, we don't want it either
                 if statement[0] == "#" or statement[0:3] == ">>>":
                     module_name = ""
@@ -95,8 +96,8 @@ def get_unknow_import(dir_to_search: str) -> tuple[list[str], dict[str, list[str
                     module_name = module_name.split(".")[0]
                 if module_name != "":
                     import_statements.append(module_name.lower())
-                if module_name.lower() == "raised":
-                    print(statement)
+                # if module_name.lower() == "$module":
+                #     print(statement)
         f.close()
 
     if "importlib" in import_statements:
@@ -133,7 +134,7 @@ def print_unknow_import(dir_to_search: str) -> None:
     for f in requirements_txt:
         print(f"  from {f}:")
         for m in requirements_txt[f]:
-            print(f"    dev-python/{m}", "[${PYTHON_USEDEP}]")
+            print(f"    dev-python/{m}")
 
 
 if __name__ == "__main__":
