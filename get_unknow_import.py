@@ -9,7 +9,7 @@ import sys
 
 def make_sure_venv_empty() -> None:
     try:
-        # Classic module to be installed, yet not part of the python standart library
+        # Classic module to be installed, yet not part of the python standard library
         import numpy
 
         empty_venv = True
