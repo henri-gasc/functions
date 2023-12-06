@@ -54,7 +54,7 @@ class Ebuild:
         f.write(f"# Distributed under the terms of the GNU General Public License v2\n\n")
         f.write(f"EAPI={self.eapi}\n\n")
         f.write(f"DISTUTILS_USE_PEP517={self.tool}\n")
-        f.write( "PYTHON_COMPAT=( python3_{10..12} )\n\n")
+        f.write( "PYTHON_COMPAT=( python3_{10..12} )\n")
         f.write(f"inherit {self.inherit}\n\n")
         f.write(f"DESCRIPTION=\"{self.description}\"\n")
         f.write(f"HOMEPAGE=\"{self.homepage}\"\n")
@@ -97,6 +97,8 @@ class Ebuild:
             stop = 1
             if version[1] == "=":
                 stop += 1
+            if version[0] == "=":
+                version.replace("=", "~")
             v.append(f"{version[:stop]}{name}-{version[stop:]}")
         elif version[0] == "^":
             v_s = version[1:].split(".")
