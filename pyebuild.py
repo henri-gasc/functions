@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import os
-import tomllib
-import sys
 import platform
+import sys
 import time
 from typing import Any, Optional, TextIO
+
+import tomllib
+
 
 class Ebuild:
     def __init__(self, path_to_pyprojectdottoml: str) -> None:
@@ -51,25 +53,27 @@ class Ebuild:
     def write(self) -> None:
         f = open(f"./{self.name}-{self.version}.ebuild", "w")
         f.write(f"# Copyright 1999-{time.localtime().tm_year} Gentoo Authors\n")
-        f.write(f"# Distributed under the terms of the GNU General Public License v2\n\n")
+        f.write(
+            f"# Distributed under the terms of the GNU General Public License v2\n\n"
+        )
         f.write(f"EAPI={self.eapi}\n\n")
         f.write(f"DISTUTILS_USE_PEP517={self.tool}\n")
-        f.write( "PYTHON_COMPAT=( python3_{10..12} )\n")
+        f.write("PYTHON_COMPAT=( python3_{10..12} )\n")
         f.write(f"inherit {self.inherit}\n\n")
-        f.write(f"DESCRIPTION=\"{self.description}\"\n")
-        f.write(f"HOMEPAGE=\"{self.homepage}\"\n")
-        f.write(f"SRC_URI=\"{self.src_uri}\"\n\n")
-        f.write(f"LICENSE=\"{self.license}\"\n")
-        f.write(f"SLOT=\"0\"\n")
-        f.write(f"KEYWORDS=\"{self.keywords}\"\n")
-        f.write(f"IUSE=\"{self.iuse}\"\n\n")
-        f.write(f"RDEPEND=\"\n")
+        f.write(f'DESCRIPTION="{self.description}"\n')
+        f.write(f'HOMEPAGE="{self.homepage}"\n')
+        f.write(f'SRC_URI="{self.src_uri}"\n\n')
+        f.write(f'LICENSE="{self.license}"\n')
+        f.write(f'SLOT="0"\n')
+        f.write(f'KEYWORDS="{self.keywords}"\n')
+        f.write(f'IUSE="{self.iuse}"\n\n')
+        f.write(f'RDEPEND="\n')
         self.write_depend(f, self.rdepend)
-        f.write(f"\"\n\n")
-        f.write(f"BDEPEND=\"\n")
+        f.write(f'"\n\n')
+        f.write(f'BDEPEND="\n')
         self.write_depend(f, self.bdepend)
-        f.write(f"\"\n\n")
-        f.write( "DEPEND=\"${RDEPEND}\"\n")
+        f.write(f'"\n\n')
+        f.write('DEPEND="${RDEPEND}"\n')
         if self.optfeature != []:
             f.write("pkg_postinst() {\n")
             for opt in self.optfeature:
@@ -86,9 +90,11 @@ class Ebuild:
             for dep in depend[cat]:
                 file.write(f"{before}\t{dep}\n")
             if cat != "":
-                file.write( "\t)\n")
-    
-    def format_version(self, version: str, name: str, add_usedep: bool=True) -> list[str]:
+                file.write("\t)\n")
+
+    def format_version(
+        self, version: str, name: str, add_usedep: bool = True
+    ) -> list[str]:
         v = []
         if "," in version:
             for i in version.split(","):
@@ -105,7 +111,7 @@ class Ebuild:
             j = 0
             while int(v_s[j]) == 0:
                 j += 1
-            ver_up = ["0" for _ in range(len(v_s)-1)]
+            ver_up = ["0" for _ in range(len(v_s) - 1)]
             ver_up.insert(j, f"{int(v_s[j])+1}")
             v.append(f">={name}-{'.'.join(v_s)}")
             v.append(f"<{name}-{'.'.join(ver_up)}")
@@ -119,42 +125,6 @@ class Ebuild:
             return [i + "[${PYTHON_USEDEP}]" for i in v]
         else:
             return v
-
-
-class Poetry(Ebuild):
-    def __init__(self, path_to_pyprojectdottoml: str):
-        super().__init__(path_to_pyprojectdottoml)
-
-    def extract_toml(self) -> None:
-        toml = self.toml["tool"]["poetry"]
-        self.name = toml["name"]
-        self.version = toml["version"]
-        self.tool = "poetry"
-        self.description = toml["description"]
-        self.license = toml["license"]
-        self.homepage = f"{toml['homepage']} {toml['repository']}"
-        self.src_uri = f"{toml['repository']}/archive/refs/tags/" + "v${PV}.tar.gz -> ${P}.gh.tar.gz"
-        if "extras" in toml.keys():
-            self.get_extras(toml)
-        self.rdepend[""] = self.get_dependencies(toml["dependencies"])
-        self.bdepend["test"] = self.get_name_dev_dep(toml, False)
-
-    def get_name_dev_dep(self, toml: dict[str, Any], allow_simple_dep: bool) -> list[str]:
-        list_dev = []
-        if "dev-dependencies" in toml.keys():
-            list_dev += self.get_dependencies(toml["dev-dependencies"])
-        if "dependencies" in toml.keys() and allow_simple_dep:
-            list_dev += self.get_dependencies(toml["dependencies"])
-        if "dev" in toml.keys():
-            list_dev += self.get_name_dev_dep(toml["dev"], True)
-        if "group" in toml.keys():
-            list_dev += self.get_name_dev_dep(toml["group"], False)
-        return list_dev
-
-    def get_extras(self, toml: dict[str, Any]) -> None:
-        self.inherit += " optfeature"
-        for f in toml["extras"]:
-            self.optfeature += toml["extras"][f]
 
     def parse_dep(self, dep: dict[str, str], name: str) -> str:
         ver = f"{self.format_version(dep['version'], name)}"
@@ -182,6 +152,48 @@ class Poetry(Ebuild):
                 print(f"Sorry, can't extract version from {v}")
         return deps
 
+    def get_name_dev_dep(
+        self, toml: dict[str, Any], allow_simple_dep: bool
+    ) -> list[str]:
+        list_dev = []
+        if "dev-dependencies" in toml.keys():
+            list_dev += self.get_dependencies(toml["dev-dependencies"])
+        if "dependencies" in toml.keys() and allow_simple_dep:
+            list_dev += self.get_dependencies(toml["dependencies"])
+        if "dev" in toml.keys():
+            list_dev += self.get_name_dev_dep(toml["dev"], True)
+        if "group" in toml.keys():
+            list_dev += self.get_name_dev_dep(toml["group"], False)
+        return list_dev
+
+
+class Poetry(Ebuild):
+    def __init__(self, path_to_pyprojectdottoml: str):
+        super().__init__(path_to_pyprojectdottoml)
+
+    def extract_toml(self) -> None:
+        toml = self.toml["tool"]["poetry"]
+        self.name = toml["name"]
+        self.version = toml["version"]
+        self.tool = "poetry"
+        self.description = toml["description"]
+        self.license = toml["license"]
+        self.homepage = f"{toml['homepage']} {toml['repository']}"
+        self.src_uri = (
+            f"{toml['repository']}/archive/refs/tags/"
+            + "v${PV}.tar.gz -> ${P}.gh.tar.gz"
+        )
+        if "extras" in toml.keys():
+            self.get_extras(toml)
+        self.rdepend[""] = self.get_dependencies(toml["dependencies"])
+        self.bdepend["test"] = self.get_name_dev_dep(toml, False)
+
+    def get_extras(self, toml: dict[str, Any]) -> None:
+        self.inherit += " optfeature"
+        for f in toml["extras"]:
+            self.optfeature += toml["extras"][f]
+
+
 def search_dir(directory: str) -> list[str]:
     files = []
     if os.path.isfile(directory):
@@ -196,6 +208,7 @@ def search_dir(directory: str) -> list[str]:
     else:
         print(f"ignoring {directory}, not a file nor a directory")
     return files
+
 
 if len(sys.argv) == 1:
     d = "."
