@@ -219,6 +219,27 @@ class Poetry(Ebuild):
         for f in toml["extras"]:
             self.optfeature += toml["extras"][f]
 
+class Flit(Ebuild):
+    def __init__(self, path_to_pyprojectdottoml: str):
+        super().__init__(path_to_pyprojectdottoml)
+
+    def extract_toml(self) -> None:
+        toml = self.toml["tool"]["flit"]["metadata"]
+        self.name = toml["dist-name"]
+        self.version = ""
+        self.tool = "flit"
+        self.description = toml["description"]
+        self.license = toml["license"]
+        self.homepage = f"{toml['homepage']}"
+        self.repo = 'homepage'
+        if 'repository' in toml.keys():
+            self.homepage = f"{self.homepage} {toml['repository']}"
+            self.repo = 'repository'
+        self.src_uri = (
+            f"{toml[self.repo]}/archive/refs/tags/"
+            + "v${PV}.tar.gz -> ${P}.gh.tar.gz"
+        )
+        self.rdepend[""] = self.get_dependencies(self.toml["requires"])
 
 def search_dir(directory: str) -> list[str]:
     files = []
@@ -245,9 +266,11 @@ for f in search_dir(d):
     with open(f, "rb") as file:
         tom = tomllib.load(file)
     back = tom["build-system"]["build-backend"]
-    ebuild = None
+    ebuild: Optional[Ebuild] = None
     if back == "poetry.core.masonry.api":
         ebuild = Poetry(f)
+    elif back == "flit_core.buildapi":
+        ebuild = Flit(f)
 
     if ebuild is not None:
         ebuild.build()
