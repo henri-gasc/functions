@@ -178,9 +178,13 @@ class Poetry(Ebuild):
         self.tool = "poetry"
         self.description = toml["description"]
         self.license = toml["license"]
-        self.homepage = f"{toml['homepage']} {toml['repository']}"
+        self.homepage = f"{toml['homepage']}"
+        self.repo = 'homepage'
+        if 'repository' in toml.keys():
+            self.homepage = f"{self.homepage} {toml['repository']}"
+            self.repo = 'repository'
         self.src_uri = (
-            f"{toml['repository']}/archive/refs/tags/"
+            f"{toml[self.repo]}/archive/refs/tags/"
             + "v${PV}.tar.gz -> ${P}.gh.tar.gz"
         )
         if "extras" in toml.keys():
