@@ -87,7 +87,7 @@ class Ebuild:
         if self.optfeature != []:
             f.write("pkg_postinst() {\n")
             for opt in self.optfeature:
-                f.write(f"\toptfeature dev-python/{opt}\n")
+                f.write(f'\toptfeature "fill this" dev-python/{opt}\n')
             f.write("}\n")
         f.close()
 
