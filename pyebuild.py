@@ -33,7 +33,10 @@ class Ebuild:
             self.toml = tomllib.load(f)
 
     def get_keyword(self) -> None:
-        self.keywords = f"~{platform.machine()}"
+        arch = platform.machine()
+        if arch == "x86_64":
+            arch = "amd64"
+        self.keywords = f"~{arch}"
 
     def guess_iuse(self) -> None:
         p = os.path.split(os.path.abspath(self.path))[0]
