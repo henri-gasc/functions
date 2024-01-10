@@ -23,7 +23,7 @@ class Ebuild:
         self.src_uri = ""
         self.license = ""
         self.keywords = ""
-        self.iuse = ""
+        self.iuse: set[str] = set()
         self.test_package = ""
         self.doc_package = ""
         self.rdepend: dict[str, list[str]] = {"": [""]}
@@ -43,9 +43,9 @@ class Ebuild:
         for f in os.listdir(p):
             if os.path.isdir(f):
                 if f.lower() in ["test", "tests"]:
-                    self.iuse += " test"
+                    self.iuse.add("test")
                 elif f.lower() in ["doc", "docs"]:
-                    self.iuse += " doc"
+                    self.iuse.add("doc")
 
     def extract_toml(self) -> None:
         raise NotImplementedError("You should not use this class")
@@ -74,7 +74,7 @@ class Ebuild:
         f.write(f'LICENSE="{self.license}"\n')
         f.write(f'SLOT="0"\n')
         f.write(f'KEYWORDS="{self.keywords}"\n')
-        f.write(f'IUSE="{self.iuse.strip()}"\n\n')
+        f.write(f'IUSE="{""" """.join(self.iuse)}"\n\n')
         f.write(f'RDEPEND="\n')
         self.write_depend(f, self.rdepend)
         f.write(f'"\n\n')
@@ -145,7 +145,7 @@ class Ebuild:
         if "optional" in dep.keys() and dep["optional"]:
             out = f"opt? ( {' '.join(vers)} )"
             if "opt" not in self.iuse:
-                self.iuse += " opt"
+                self.iuse.add("opt")
         if "python" in dep.keys():
             out = f"python {dep['python']} ? ( {' '.join(vers)} )"
         if "extras" in dep.keys():
