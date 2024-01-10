@@ -66,7 +66,7 @@ class Ebuild:
         f.write(f'LICENSE="{self.license}"\n')
         f.write(f'SLOT="0"\n')
         f.write(f'KEYWORDS="{self.keywords}"\n')
-        f.write(f'IUSE="{self.iuse}"\n\n')
+        f.write(f'IUSE="{self.iuse.strip()}"\n\n')
         f.write(f'RDEPEND="\n')
         self.write_depend(f, self.rdepend)
         f.write(f'"\n\n')
@@ -115,26 +115,32 @@ class Ebuild:
             ver_up.insert(j, f"{int(v_s[j])+1}")
             v.append(f">={name}-{'.'.join(v_s)}")
             v.append(f"<{name}-{'.'.join(ver_up)}")
+        elif version[0] == "*":
+            v.append(name)
         else:
             try:
                 int(version[0])
                 v.append(f"={name}-{version}")
             except:
                 print(f"Sorry, this ({version}) was not taken into account")
+        # print(v)
         if add_usedep:
             return [i + "[${PYTHON_USEDEP}]" for i in v]
         else:
             return v
 
-    def parse_dep(self, dep: dict[str, str], name: str) -> str:
-        ver = f"{self.format_version(dep['version'], name)}"
+    def parse_dep(self, dep: dict[str, Any], name: str) -> str:
+        out = ""
+        vers = self.format_version(dep['version'], name)
         if "optional" in dep.keys() and dep["optional"]:
-            ver = f"opt? ( {ver} )"
-            if " opt" not in self.iuse:
+            out = f"opt? ( {' '.join(vers)} )"
+            if "opt" not in self.iuse:
                 self.iuse += " opt"
         if "python" in dep.keys():
-            ver = f"python {dep['python']} ? ( {ver} )"
-        return ver
+            out = f"python {dep['python']} ? ( {' '.join(vers)} )"
+        if "extras" in dep.keys():
+            out = f"{' '.join(vers)} ({dep['extras']})"
+        return out
 
     def get_dependencies(self, dependencies: dict[str, Any]) -> list[str]:
         deps = []
