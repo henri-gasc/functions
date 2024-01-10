@@ -24,6 +24,8 @@ class Ebuild:
         self.license = ""
         self.keywords = ""
         self.iuse = ""
+        self.test_package = ""
+        self.doc_package = ""
         self.rdepend: dict[str, list[str]] = {"": [""]}
         self.bdepend: dict[str, list[str]] = {"": [""]}
         self.optfeature: list[Optional[str]] = []
@@ -57,8 +59,11 @@ class Ebuild:
             f"# Distributed under the terms of the GNU General Public License v2\n\n"
         )
         f.write(f"EAPI={self.eapi}\n\n")
+        if "doc" in self.iuse:
+            f.write(f'DOCS_BUILDER="{self.doc_package}"\n')
+            f.write(f'DOCS_DIR="docs"\n')
         f.write(f"DISTUTILS_USE_PEP517={self.tool}\n")
-        f.write("PYTHON_COMPAT=( python3_{10..12} )\n")
+        f.write("PYTHON_COMPAT=( python3_{10..12} )\n\n")
         f.write(f"inherit {self.inherit}\n\n")
         f.write(f'DESCRIPTION="{self.description}"\n')
         f.write(f'HOMEPAGE="{self.homepage}"\n')
@@ -73,7 +78,9 @@ class Ebuild:
         f.write(f'BDEPEND="\n')
         self.write_depend(f, self.bdepend)
         f.write(f'"\n\n')
-        f.write('DEPEND="${RDEPEND}"\n')
+        f.write('DEPEND="${RDEPEND}"\n\n')
+        if "test" in self.iuse:
+            f.write(f"distutils_enable_tests {self.test_package}\n")
         if self.optfeature != []:
             f.write("pkg_postinst() {\n")
             for opt in self.optfeature:
@@ -142,9 +149,18 @@ class Ebuild:
             out = f"{' '.join(vers)} ({dep['extras']})"
         return out
 
+    def guess_test_doc(self, name: str) -> None:
+        if "pytest" in name:
+            self.test_package = "pytest"
+        elif "sphinx" in name:
+            self.doc_package = "sphinx"
+        elif "mkdocs" in name:
+            self.doc_package = "mkdocs"
+
     def get_dependencies(self, dependencies: dict[str, Any]) -> list[str]:
         deps = []
         for d in dependencies:
+            self.guess_test_doc(d)
             v = dependencies[d]
             if type(v) == str:
                 for formatted in self.format_version(v, f"dev-python/{d}"):
