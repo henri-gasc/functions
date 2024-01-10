@@ -137,7 +137,19 @@ class Poetry(Ebuild):
         if "extras" in toml.keys():
             self.get_extras(toml)
         self.rdepend[""] = self.get_dependencies(toml["dependencies"])
-        self.bdepend["test"] = self.get_dependencies(toml["dev-dependencies"])
+        self.bdepend["test"] = self.get_name_dev_dep(toml, False)
+
+    def get_name_dev_dep(self, toml: dict[str, Any], allow_simple_dep: bool) -> list[str]:
+        list_dev = []
+        if "dev-dependencies" in toml.keys():
+            list_dev += self.get_dependencies(toml["dev-dependencies"])
+        if "dependencies" in toml.keys() and allow_simple_dep:
+            list_dev += self.get_dependencies(toml["dependencies"])
+        if "dev" in toml.keys():
+            list_dev += self.get_name_dev_dep(toml["dev"], True)
+        if "group" in toml.keys():
+            list_dev += self.get_name_dev_dep(toml["group"], False)
+        return list_dev
 
     def get_extras(self, toml: dict[str, Any]) -> None:
         self.inherit += " optfeature"
