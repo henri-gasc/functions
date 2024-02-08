@@ -20,7 +20,18 @@ out_1="/tmp/current"
 out_2="/tmp/snapshot"
 
 filter() {
-  rg -v 'CachedData|Cache_Data|__pycache__|\.wine|\.local/share/Trash|\.mozilla|\.thunderbird|\.config/Signal/attachments|\.config/VSCodium|/logs|/User|\.vscode-oss/extensions|/target/build|\.julia|\.local/share/okular|\.local/share/RecentDocuments|Documents/Git/sources|\.mypy_cache|\.cargo/registry|\.zsh|\.nuget|\.npm|node_modules|\.mapscii|\.m2/repository|\.local/state|mangas/.*/[0-9]*|\.config/libreoffice'
+  rg -v 'CachedData|Cache_Data|\.config/VSCodium|\.vscode-oss/extensions' | \
+  rg -v '__pycache__|\.mypy_cache' | \
+  rg -v 'node_modules|\.npm' | \
+  rg -v '\.wine|\.cargo/registry|\.julia|\.nuget|\.mapscii|\.m2/repository' | \
+  rg -v '\.local/share/Trash|\.local/share/okular' | \
+  rg -v '\.mozilla|\.thunderbird|\.local/share/RecentDocuments' | \
+  rg -v '\.config/Signal/attachments' | \
+  rg -v '\.config|libreoffice' | \
+  rg -v '/target/build|/target/debug|Documents/Git/sources' | \
+  rg -v '\.local/state' | \
+  rg -v 'mangas/.*/[0-9]*' | \
+  rg -v 'Documents/Gentoo/gentoo|Documents/Gentoo/GURU'
 }
 
 echo "Doing ${first_folder}"
