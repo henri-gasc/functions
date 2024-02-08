@@ -20,7 +20,7 @@ out_1="/tmp/current"
 out_2="/tmp/snapshot"
 
 filter() {
-  rg -v 'CachedData|__pycache__|\.wine|\.local/share/Trash|\.mozilla|\.thunderbird|\.config/Signal/attachements|/logs|/User'
+  rg -v 'CachedData|Cache_Data|__pycache__|\.wine|\.local/share/Trash|\.mozilla|\.thunderbird|\.config/Signal/attachments|\.config/VSCodium|/logs|/User|\.vscode-oss/extensions|/target/build|\.julia|\.local/share/okular|\.local/share/RecentDocuments|Documents/Git/sources|\.mypy_cache|\.cargo/registry|\.zsh|\.nuget|\.npm|node_modules|\.mapscii|\.m2/repository|\.local/state|mangas/.*/[0-9]*|\.config/libreoffice'
 }
 
 echo "Doing ${first_folder}"
