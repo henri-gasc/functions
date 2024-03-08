@@ -28,7 +28,7 @@ filter() {
   rg -v '\.mozilla|\.thunderbird|\.local/share/RecentDocuments' | \
   rg -v '\.config/Signal/attachments' | \
   rg -v '\.config|libreoffice' | \
-  rg -v '/target/build|/target/debug|Documents/Git/sources' | \
+  rg -v '/target/build|/target/release|/target/debug|Documents/Git/sources' | \
   rg -v '\.local/state' | \
   rg -v 'mangas/.*/[0-9]*' | \
   rg -v 'Documents/Gentoo/gentoo|Documents/Gentoo/GURU'

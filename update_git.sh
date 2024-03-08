@@ -34,6 +34,7 @@ loop() {
 }
 
 builtin cd "$GITDIR"
+touch "../repoUpdated.txt"
 if [[ "$@" != "" ]]; then
     for d in "$@"; do
         builtin cd "$d"
@@ -41,13 +42,12 @@ if [[ "$@" != "" ]]; then
         builtin cd ".."
     done
 else
-    touch "../repoUpdated.txt"
     loop
-    if [ "$(cat ../repoUpdated.txt)" == "" ]; then
-        echo "No update were detected"
-    else
-        echo "The following repositories were updated:"
-        cat ../repoUpdated.txt
-        rm ../repoUpdated.txt
-    fi
+fi
+if [ "$(cat ../repoUpdated.txt)" == "" ]; then
+    echo "No update were detected"
+else
+    echo "The following repositories were updated:"
+    cat ../repoUpdated.txt
+    rm ../repoUpdated.txt
 fi
