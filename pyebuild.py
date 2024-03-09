@@ -8,10 +8,48 @@ import time
 from typing import Any, Optional, TextIO
 
 import tomllib
+import configparser
 
+
+def update_dict(d: dict[Any, Any], u: dict[Any, Any]) -> dict[Any, Any]:
+    for k, v in u.items():
+        if isinstance(v, dict):
+            d[k] = update_dict(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
+
+def convert_cfg_to_dict(cfg_file: str) -> dict[Any, Any]:
+    def join(l: list[str], value: Any) -> dict[Any, Any]:
+        if len(l) == 1:
+            return {l[0]: value}
+        else:
+            return {l[0]: join(l[1:], value)}
+
+    def explore_cfg(section: configparser.SectionProxy) -> dict[Any, Any]:
+        d: dict[Any, Any] = {}
+        for i in section:
+            value = section[i]
+            names = i.split(".")
+            if type(value) == str:
+                if section[i][0] == "\n":
+                    d = update_dict(d, join(names, value.split("\n")[1:]))
+                else:
+                    d = update_dict(d, join(names, value))
+            else:
+                d = update_dict(d, join(names, explore_cfg(value)))
+        return d
+
+    out: dict[Any, Any] = {}
+    conf = configparser.ConfigParser()
+    conf.read(cfg_file)
+    for s in conf.sections():
+        names = s.split(".")
+        out = update_dict(out, join(names, explore_cfg(conf[s])))
+    return out
 
 class Ebuild:
-    def __init__(self, path_to_pyprojectdottoml: str) -> None:
+    def __init__(self, path_to_pyprojectdottoml: str, path_to_setupcfg:str="") -> None:
         self.path = path_to_pyprojectdottoml
         self.eapi = 8
         self.name = ""
@@ -26,11 +64,14 @@ class Ebuild:
         self.iuse: set[str] = set()
         self.test_package = ""
         self.doc_package = ""
+        self.repo = "homepage"
         self.rdepend: dict[str, list[str]] = {"": [""]}
         self.bdepend: dict[str, list[str]] = {"": [""]}
         self.optfeature: list[Optional[str]] = []
         with open(self.path, "rb") as f:
             self.toml = tomllib.load(f)
+        if path_to_setupcfg != "":
+            self.toml = update_dict(self.toml, convert_cfg_to_dict(path_to_setupcfg))
 
     def get_keyword(self) -> None:
         arch = platform.machine()
@@ -49,6 +90,20 @@ class Ebuild:
 
     def extract_toml(self) -> None:
         raise NotImplementedError("You should not use this class")
+
+    def define_source(self, toml: dict[str, Any]) -> None:
+        if "homepage" in toml.keys():
+            self.homepage = toml["homepage"]
+        if 'repository' in toml.keys():
+            self.homepage = f"{self.homepage} {toml['repository']}"
+            self.repo = 'repository'
+        if "url" in toml.keys():
+            self.homepage = f"{self.homepage} {toml["url"]}"
+            self.repo = "url"
+        self.src_uri = (
+            f"{toml[self.repo]}/archive/refs/tags/"
+            + "v${PV}.tar.gz -> ${P}.gh.tar.gz"
+        )
 
     def build(self) -> None:
         self.extract_toml()
@@ -84,6 +139,8 @@ class Ebuild:
         f.write('DEPEND="${RDEPEND}"\n\n')
         if "test" in self.iuse:
             f.write(f"distutils_enable_tests {self.test_package}\n")
+        if "doc" in self.iuse:
+            f.write(f"# distutils_enable_sphinx docs")
         if self.optfeature != []:
             f.write("pkg_postinst() {\n")
             for opt in self.optfeature:
@@ -160,8 +217,10 @@ class Ebuild:
         elif "mkdocs" in name:
             self.doc_package = "mkdocs"
 
-    def get_dependencies(self, dependencies: dict[str, Any]) -> list[str]:
+    def get_dependencies(self, dependencies: dict[str, Any] | list[str]) -> list[str]:
         deps = []
+        if type(dependencies) == list:
+            return [f"dev-python/{d}" for d in dependencies]
         for d in dependencies:
             self.guess_test_doc(d)
             v = dependencies[d]
@@ -203,15 +262,7 @@ class Poetry(Ebuild):
         self.tool = "poetry"
         self.description = toml["description"]
         self.license = toml["license"]
-        self.homepage = f"{toml['homepage']}"
-        self.repo = 'homepage'
-        if 'repository' in toml.keys():
-            self.homepage = f"{self.homepage} {toml['repository']}"
-            self.repo = 'repository'
-        self.src_uri = (
-            f"{toml[self.repo]}/archive/refs/tags/"
-            + "v${PV}.tar.gz -> ${P}.gh.tar.gz"
-        )
+        self.define_source(toml)
         if "extras" in toml.keys():
             self.get_extras(toml)
         self.rdepend[""] = self.get_dependencies(toml["dependencies"])
@@ -229,20 +280,28 @@ class Flit(Ebuild):
     def extract_toml(self) -> None:
         toml = self.toml["tool"]["flit"]["metadata"]
         self.name = toml["dist-name"]
-        self.version = ""
         self.tool = "flit"
         self.description = toml["description"]
         self.license = toml["license"]
-        self.homepage = f"{toml['homepage']}"
-        self.repo = 'homepage'
-        if 'repository' in toml.keys():
-            self.homepage = f"{self.homepage} {toml['repository']}"
-            self.repo = 'repository'
-        self.src_uri = (
-            f"{toml[self.repo]}/archive/refs/tags/"
-            + "v${PV}.tar.gz -> ${P}.gh.tar.gz"
-        )
+        self.define_source(toml)
         self.rdepend[""] = self.get_dependencies(self.toml["requires"])
+
+class SetupTools(Ebuild):
+    def __init__(self, path_to_pyprojectdottoml: str):
+        setup_cfg = f"{os.path.dirname(path_to_pyprojectdottoml)}/setup.cfg"
+        if not os.path.isfile(setup_cfg):
+            setup_cfg = ""
+        super().__init__(path_to_pyprojectdottoml, path_to_setupcfg=setup_cfg)
+
+    def extract_toml(self) -> None:
+        toml = self.toml["metadata"]
+        self.name = toml["name"]
+        self.tool = "setuptools"
+        self.description = toml["description"]
+        self.license = toml["license"]
+        self.define_source(toml)
+        self.bdepend[""] = self.get_dependencies(self.toml["build-system"]["requires"])
+        self.bdepend["extra"] = self.get_dependencies([self.toml["options"]["extras_require"]["dev"]])
 
 def search_dir(directory: str) -> list[str]:
     files = []
@@ -274,6 +333,8 @@ for f in search_dir(d):
         ebuild = Poetry(f)
     elif back == "flit_core.buildapi":
         ebuild = Flit(f)
+    elif back == "setuptools.build_meta":
+        ebuild = SetupTools(f)
 
     if ebuild is not None:
         ebuild.build()
