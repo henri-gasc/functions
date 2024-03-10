@@ -33,9 +33,15 @@ loop() {
     fi
 }
 
+start_folder="$(pwd)"
+
 builtin cd "$GITDIR"
 touch "../repoUpdated.txt"
-if [[ "$@" != "" ]]; then
+if [[ "$1" == "." ]]; then
+	builtin cd "${start_folder}"
+	loop "."
+	builtin cd "${GITDIR}"
+else if [[ "$@" != "" ]]; then
     for d in "$@"; do
         builtin cd "$d"
         loop "$d"
