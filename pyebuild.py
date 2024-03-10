@@ -87,6 +87,7 @@ class Ebuild:
                     self.iuse.add("test")
                 elif f.lower() in ["doc", "docs"]:
                     self.iuse.add("doc")
+                    self.inherit += " docs"
 
     def extract_toml(self) -> None:
         raise NotImplementedError("You should not use this class")
@@ -117,12 +118,15 @@ class Ebuild:
             f"# Distributed under the terms of the GNU General Public License v2\n\n"
         )
         f.write(f"EAPI={self.eapi}\n\n")
-        if "doc" in self.iuse:
-            f.write(f'DOCS_BUILDER="{self.doc_package}"\n')
-            f.write(f'DOCS_DIR="docs"\n')
         f.write(f"DISTUTILS_USE_PEP517={self.tool}\n")
-        f.write("PYTHON_COMPAT=( python3_{10..12} )\n\n")
-        f.write(f"inherit {self.inherit}\n\n")
+        f.write("PYTHON_COMPAT=( python3_{10..12} )\n")
+        if "doc" in self.iuse:
+            f.write(f'\nDOCS_BUILDER="{self.doc_package}"\n')
+            f.write(f'DOCS_DEPEND=""\n')
+            f.write(f'DOCS_DIR="docs"\n')
+            if self.doc_package == "mkdocs":
+                f.write("DOCS_INITIALIZE_GIT=1\n")
+        f.write(f"\ninherit {self.inherit}\n\n")
         f.write(f'DESCRIPTION="{self.description}"\n')
         f.write(f'HOMEPAGE="{self.homepage}"\n')
         f.write(f'SRC_URI="{self.src_uri}"\n\n')
@@ -140,9 +144,9 @@ class Ebuild:
         if "test" in self.iuse:
             f.write(f"distutils_enable_tests {self.test_package}\n")
         if "doc" in self.iuse:
-            f.write(f"# distutils_enable_sphinx docs")
+            f.write(f"# distutils_enable_sphinx docs\n")
         if self.optfeature != []:
-            f.write("pkg_postinst() {\n")
+            f.write("\npkg_postinst() {\n")
             for opt in self.optfeature:
                 f.write(f'\toptfeature "fill this" dev-python/{opt}\n')
             f.write("}\n")
@@ -324,7 +328,10 @@ if len(sys.argv) == 1:
 else:
     d = sys.argv[1]
 
-for f in search_dir(d):
+files = search_dir(d)
+if len(files) == 0:
+    print("No project detected")
+for f in files:
     with open(f, "rb") as file:
         tom = tomllib.load(file)
     back = tom["build-system"]["build-backend"]
