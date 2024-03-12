@@ -23,15 +23,21 @@ filter() {
   rg -v 'CachedData|Cache_Data|\.config/VSCodium|\.vscode-oss/extensions' | \
   rg -v '__pycache__|\.mypy_cache' | \
   rg -v 'node_modules|\.npm' | \
-  rg -v '\.wine|\.cargo/registry|\.julia|\.nuget|\.mapscii|\.m2/repository' | \
+  rg -v '\.cargo/advisory-db|\.cargo/registry' | \
+  rg -v '\.wine|\.julia|\.nuget|\.mapscii|\.m2/repository' | \
   rg -v '\.local/share/Trash|\.local/share/okular' | \
+  rg -v '\.local/share/nvim' | \
   rg -v '\.mozilla|\.thunderbird|\.local/share/RecentDocuments' | \
   rg -v '\.config/Signal/attachments' | \
   rg -v '\.config|libreoffice' | \
-  rg -v '/target/build|/target/release|/target/debug|Documents/Git/sources' | \
+  rg -v '/target/build|/target/release|/target/debug' | \
   rg -v '\.local/state' | \
   rg -v 'mangas/.*/[0-9]*' | \
   rg -v 'Documents/Gentoo/gentoo|Documents/Gentoo/GURU'
+}
+
+filter_new() {
+	rg -v 'Documents/Git/sources'
 }
 
 echo "Doing ${first_folder}"
@@ -45,4 +51,4 @@ diff "${out_2}" "${out_1}" > /tmp/diff
 echo "In ${second_folder} but not in ${first_folder}:"
 rg "^< " /tmp/diff --no-line-number | filter
 echo "In ${first_folder} but not in ${second_folder}:"
-rg "^> " /tmp/diff --no-line-number | filter
+rg "^> " /tmp/diff --no-line-number | filter | filter_new
