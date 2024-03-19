@@ -17,10 +17,16 @@ loop() {
             builtin cd "$d"
             git rev-parse 2>/dev/null
             if [ $? -eq 0 ]; then
+				detached="$(git status | rg 'detached')"
+				if [ "${detached}" != "" ]; then
+					branch_name="$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')"
+					echo "Going to ${branch_name}"
+					trash=`git checkout "${branch_name}"`
+				fi
                 echo "git pull $d"
-                tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
+                tag="$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)"
                 pull_git_repo
-                new_tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
+                new_tag="$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)"
                 if [ $? -eq 0 ] && [ "$new_tag" != "$tag" ]; then
                     echo "$d : $tag -> $new_tag" >> $GITDIR/../repoUpdated.txt
                 fi
