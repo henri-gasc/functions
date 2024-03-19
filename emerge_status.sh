@@ -1,13 +1,15 @@
 #!/bin/sh
 
 test_file() {
-	if [ ! -f "$1" ]; then
+	testing_file="$1"
+	if [ ! -f "${testing_file}" ]; then
 		return
 	fi
-	message="$(qlop -rvCH -f ${1} 2>&1 | head -n 1)"
+	message="$(qlop -rvCH -f ${testing_file} 2>&1 | head -n 1)"
 	error='qlop: insufficient privileges for full /proc access, running merges are based on heuristics'
 	if [ "${message}" == "${error}" ]; then
-		message="$(qlop -rvCH -f ${1} 2>&1 | head -n 2 | tail -n 1)"
+		message="$(qlop -rvCH -f ${testing_file} 2>&1 | head -n 2)"
+		message=`$(echo -e "${message}\n" | tail -n 1)`
 	fi
 
 	if [ "${message}" == "" ]; then
