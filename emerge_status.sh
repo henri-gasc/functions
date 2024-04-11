@@ -44,4 +44,6 @@
 #	echo "foo: $m"
 #fi
 
-echo "$(gls --skip-file -f /mnt/foo/var/log/emerge.log,foo -f /mnt/stable_stage3/var/log/emerge.log,stable_stage3 -f /var/log/emerge.log, --name)"
+arguments="--skip-file --fakeroot /mnt/foo --fakeroot /mnt/stable_stage3 --fakeroot / --show-root"
+echo "$(gls ${arguments})"
+echo "$(gls ${arguments} --all | tail -n 1)"
