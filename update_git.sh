@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+update_file="${GITDIR}/repoUpdated.txt"
+
 pull_git_repo() {
     trash=`git stash && git clean -d -f`
     git fetch
@@ -28,7 +30,7 @@ loop() {
                 pull_git_repo
                 new_tag="$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)"
                 if [ $? -eq 0 ] && [ "$new_tag" != "$tag" ]; then
-                    echo "$d : $tag -> $new_tag" >> $GITDIR/../repoUpdated.txt
+                    echo "$d : $tag -> $new_tag" >> "${update_file}"
                 fi
                 echo ""
             else
@@ -42,7 +44,7 @@ loop() {
 start_folder="$(pwd)"
 
 builtin cd "${GITDIR}"
-touch "../repoUpdated.txt"
+touch "${update_file}"
 if [[ "$1" == "." ]]; then
 	builtin cd "${start_folder}"
 	loop "."
@@ -56,10 +58,10 @@ elif [[ "$@" != "" ]]; then
 else
     loop
 fi
-if [ "$(cat ../repoUpdated.txt)" == "" ]; then
+if [ ! -f "${update_file}" ]; then
     echo "No update were detected"
 else
     echo "The following repositories were updated:"
-    cat ../repoUpdated.txt
-    rm ../repoUpdated.txt
+    cat "${update_file}"
+    rm "${update_file}"
 fi
