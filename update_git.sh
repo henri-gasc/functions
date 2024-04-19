@@ -44,7 +44,6 @@ loop() {
 start_folder="$(pwd)"
 
 builtin cd "${GITDIR}"
-touch "${update_file}"
 if [[ "$1" == "." ]]; then
 	builtin cd "${start_folder}"
 	loop "."
