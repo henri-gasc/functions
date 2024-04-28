@@ -1,23 +1,28 @@
 #!/bin/bash
 
 search_and_replace() {
-  rg --files -uuu "$1" -g '!\.cache' -g '!\.git' > "$2"
-  echo "  Done searching"
-  sed -e "s#^$1/#/#g" "$2" -i
-  echo "  Done replacing in $2"
-  sort -o "$2" "$2"
-  echo "  Done sorting"
+	if [ -f "$2" ] && [ "$2" != "/tmp/current" ]; then
+		echo "$1 is already done"
+	else
+		rg --files -uuu "$1" -g '!\.cache' -g '!\.git' > "$2"
+		echo "  Done searching"
+		sed -e "s#^$1/#/#g" "$2" -i
+		echo "  Done replacing in $2"
+		sort -o "$2" "$2"
+		echo "  Done sorting"
+	fi
 }
 
 if [ "$2" == "" ]; then
   first_folder="${HOME}"
+  out_1="/tmp/current"
 else
   first_folder="$2"
+  out_1="/tmp/snapshot_$(basename ${first_folder})"
 fi
-second_folder="$1"
 
-out_1="/tmp/current"
-out_2="/tmp/snapshot"
+second_folder="$1"
+out_2="/tmp/snapshot_$(basename ${second_folder})"
 
 filter() {
   rg -v '/CachedData/|/Cache_Data/|/\.config/VSCodium/|/\.vscode-oss/extensions/' | \
