@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 update_file="${GITDIR}/repoUpdated.txt"
+abandonned_file="${GITDIR}/repoProbablyAbandonned.txt"
 
 pull_git_repo() {
     trash=`git stash && git clean -d -f`
@@ -10,6 +11,24 @@ pull_git_repo() {
 }
 
 update_git_repo() {
+	now=$(date -u +%s)
+	last_commit=$(git log -1 --format=%ct)
+	last_fetch=$(stat -c %Y .git/FETCH_HEAD)
+	okay=""
+	# If last commit is less than a week ago, then fetch
+	if [ $((now - last_commit)) -lt 604800 ]; then
+		okay="yes"
+	# else if last commit is less than 30 days old, and last fetch is more than a week ago, also fetch
+	elif [ $((now - last_commit)) -lt 2592000 ] && [ $((now - last_fetch)) -gt 604800 ]; then
+		okay="yes"
+	# else, if the last commit is more than a year old, add the repo to probably abandonned
+	elif [ $((now - last_commit)) -gt 31536000 ]; then
+		echo "$1" >> "${abandonned_file}"
+	fi
+	if [ "${okay}" == "" ]; then
+		return
+	fi
+
 	echo "git pull $1"
 	tag="$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)"
 	pull_git_repo
@@ -46,6 +65,7 @@ loop() {
 
 start_folder="$(pwd)"
 
+rm "${abandonned_file}"
 if [[ "$1" == "." ]]; then
 	builtin cd "${start_folder}"
 	loop "."
