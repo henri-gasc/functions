@@ -5,7 +5,11 @@ get_size() {
 }
 
 clean() {
-    echo "$1"
+	if [ "$1" == "." ]; then
+		echo "$(basename ${PWD})"
+	else
+		echo "$1"
+	fi
     before="$(get_size)"
     git clean -dfx
     git gc --aggressive
