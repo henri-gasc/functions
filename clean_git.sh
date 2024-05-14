@@ -12,10 +12,9 @@ clean() {
 	fi
     before="$(get_size)"
     git clean -dfx
-    git gc --aggressive
-    git submodule foreach git gc --aggressive
-    git repack -Ad
-    git prune
+	git gc --aggressive --prune=now
+    git submodule foreach clean_git .
+    git repack -Ad --depth=4095 --window=5000
     after="$(get_size)"
     echo "$1: ${before}k -> ${after}k"
     echo ""

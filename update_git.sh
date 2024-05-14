@@ -65,7 +65,9 @@ loop() {
 
 start_folder="$(pwd)"
 
-rm "${abandonned_file}"
+if [ -f "${abandonned_file}" ]; then
+	rm "${abandonned_file}"
+fi
 if [[ "$1" == "." ]]; then
 	builtin cd "${start_folder}"
 	loop "."
