@@ -13,7 +13,11 @@ pull_git_repo() {
 update_git_repo() {
 	now=$(date -u +%s)
 	last_commit=$(git log -1 --format=%ct)
-	last_fetch=$(stat -c %Y .git/FETCH_HEAD)
+	if [ ! -f ".git/FETCH_HEAD" ]; then
+		last_fetch=0
+	else
+		last_fetch=$(stat -c %Y .git/FETCH_HEAD)
+	fi
 	okay=""
 	# If last commit is less than a week ago, then fetch
 	if [ $((now - last_commit)) -lt 604800 ]; then
