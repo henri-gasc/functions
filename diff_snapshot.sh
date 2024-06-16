@@ -28,17 +28,18 @@ filter() {
   rg -v '/CachedData/|/Cache_Data/|/\.config/VSCodium/|/\.vscode-oss/extensions/' | \
   rg -v '/__pycache__/|/\.mypy_cache/|/venv/|/.env/' | \
   rg -v '/node_modules/|/\.npm/' | \
-  rg -v '/\.cargo/advisory-db/|/\.cargo/registry/' | \
+  rg -v '/\.cargo/advisory-db/|/\.cargo/registry/|/\.cargo/git/' | \
   rg -v '/\.wine/|/\.julia/|/\.nuget/|/\.mapscii/|/\.m2/repository/|/\.docker/' | \
   rg -v '/\.local/share/Trash/|/\.local/share/okular/' | \
-  rg -v '/\.local/share/nvim/' | \
+  rg -v '/\.local/share/nvim/|/\.local/share/zed|/\.local/share/Steam' | \
   rg -v '/\.mozilla/|/\.thunderbird/|/RecentDocuments/' | \
   rg -v '/\.config/Signal/attachments/' | \
   rg -v '/\.config/libreoffice/' | \
   rg -v '/target/build|/target/release/|/target/debug/|/build/' | \
   rg -v '/\.local/state/' | \
   rg -v '/mangas/.*/[0-9]*' | \
-  rg -v '/Documents/Gentoo/gentoo/|Documents/Gentoo/GURU/'
+  rg -v '/Documents/Gentoo/gentoo/|/Documents/Gentoo/GURU/' | \
+  rg -v '/Documents/tmp'
 }
 
 filter_new() {
