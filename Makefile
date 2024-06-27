@@ -1,11 +1,29 @@
 PREFIX="$(HOME)/.local/bin"
+PREFIX_SYSTEM="/usr/local/bin"
 
-install:
+default: install
+
+system_sh:
+	cp btrfs_snapshot.sh $(PREFIX_SYSTEM)/btrfs_snapshot
+	cp clean_git.sh $(PREFIX_SYSTEM)/clean_git
+	cp update_git.sh $(PREFIX_SYSTEM)/update_git
+
+local_sh:
+	cp change_brightness.sh $(PREFIX)/change_brightness
+	cp diff_snapshot.sh $(PREFIX)/diff_snapshot
+	cp emerge_status.sh $(PREFIX)/emerge_status
+	cp get_lock.sh $(PREFIX)/get_lock
+	cp get_screen.sh $(PREFIX)/get_screen
+	cp toggle_screen.sh $(PREFIX)/toggle_screen
+	cp toggle_screen.sh $(PREFIX)/toggle_screen
+	cp take_screenshot.sh $(PREFIX)/take_screenshot
+
+local_python:
+	cp pyebuild.py $(PREFIX)/pyebuild
+	cp unicode_picker.py $(PREFIX)/unicode_picker
+
+install: exec system_sh local_sh local_python
+
+exec:
 	chmod +x *.sh
 	chmod +x *.py
-	for f in *.sh; do \
-		cp $$f "$(PREFIX)/$$(echo $$f | sed 's/\.sh//')"; \
-	done
-	for f in *.py; do \
-		cp $$f "$(PREFIX)/$$(echo $$f | sed 's/\.py//')"; \
-	done
