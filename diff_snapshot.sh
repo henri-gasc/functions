@@ -15,6 +15,20 @@ search_and_replace() {
 	fi
 }
 
+if [ "$3" != "" ]; then
+  echo "You put more than 2 folder to compare"
+  exit 1
+elif [ ! -d "$1" ]; then
+  echo "$1 does not exist or is not a directory"
+  exit 2
+elif [ "$2" != "" ] && [ ! -d "$2" ]; then
+  echo "$2 does not exist or is not a directory"
+  exit 2
+elif [ "$1" == "$2" ]; then
+  echo "The two folders you want to compare are the same"
+  exit 3
+fi
+
 if [ "$2" == "" ]; then
   first_folder="${HOME}"
   out_1="/tmp/current"
