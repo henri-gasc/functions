@@ -33,6 +33,9 @@ update_git_repo() {
 	# else, if the last commit is more than a year old, add the repo to probably abandonned
 	elif [ $((now - last_commit)) -gt 31536000 ]; then
 		echo "$1" >> "${abandonned_file}"
+	# If last commit more than 1 month, and last fetch too, fetch
+	elif [ $((now - last_commit)) -gt 2592000 ] && [ $((now - last_fetch)) -gt 2592000 ]; then
+		okay="yes"
 	fi
 	if [ "${okay}" == "" ]; then
 		return
@@ -78,9 +81,8 @@ if [ -f "${abandonned_file}" ]; then
 	rm "${abandonned_file}"
 fi
 if [[ "$1" == "." ]]; then
-	builtin cd "${start_folder}"
 	loop "."
-	builtin cd "${GITDIR}"
+	builtin cd "${start_folder}"
 elif [[ "$@" != "" ]]; then
     for d in "$@"; do
         builtin cd "$d"
@@ -92,10 +94,15 @@ else
     loop
 	builtin cd "${start_folder}"
 fi
+
 if [ ! -f "${update_file}" ]; then
     echo "No update were detected"
 else
     echo "The following repositories were updated:"
     cat "${update_file}"
     rm "${update_file}"
+fi
+
+if [ -f "${abandonned_file}" ]; then
+	echo "Use 'cat ${abandonned_file}' to see the list of repositories that were not updated in the last year"
 fi
