@@ -1,15 +1,17 @@
 #!/bin/bash
 
 search_and_replace() {
+  tmp_file="/tmp/snapshot_tmp_file"
 	if [ -f "$2" ] && [ "$2" != "/tmp/current" ]; then
 		echo "$1 is already done"
 	else
-		rg --files -uuu "$1" -g '!\.cache' -g '!\.git' > "$2"
+		rg --files -uuu "$1" -g '!\.cache' -g '!\.git' > "${tmp_file}"
 		echo "  Done searching"
-		sed -e "s#^$1/#/#g" "$2" -i
-		echo "  Done replacing in $2"
-		sort -o "$2" "$2"
+		sed -e "s#^$1/#/#g" "${tmp_file}" -i
+		echo "  Done replacing in ${tmp_file}"
+		sort -o "${tmp_file}" "${tmp_file}"
 		echo "  Done sorting"
+    mv "${tmp_file}" "$2"
 	fi
 }
 
