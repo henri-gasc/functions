@@ -46,6 +46,11 @@ loop() {
 }
 
 if [[ "$@" == "" ]]; then
+	if [ "${GITDIR}" == "" ]; then
+		echo "The GITDIR env variable is empty. Please set it to point somewhere"
+		exit 1
+	fi
+
 	base_path="$(pwd)"
 	builtin cd "${GITDIR}"
 	before_g="$(get_size)"

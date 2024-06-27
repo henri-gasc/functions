@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ "${GITDIR}" == "" ]; then
+	echo "The GITDIR env variable is empty. Please set it to point somewhere"
+	exit 1
+fi
+
 update_file="${GITDIR}/repoUpdated.txt"
 abandonned_file="${GITDIR}/repoProbablyAbandonned.txt"
 
