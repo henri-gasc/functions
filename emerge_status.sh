@@ -45,5 +45,5 @@
 #fi
 
 arguments="--skip-file --fakeroot /mnt/foo --fakeroot /mnt/stable_stage3 --fakeroot / --show-root"
-echo "$(gls ${arguments})"
+echo "$(gls ${arguments} --read-ninja)"
 echo "$(gls ${arguments} --all | tail -n 1)"
