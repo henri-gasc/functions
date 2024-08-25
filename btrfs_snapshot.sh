@@ -1,5 +1,27 @@
 #!/bin/bash
 
+# Script takes one argument
+
+# First argument is the line to verify
+line_is_correct() {
+	grep -E '\$\(|<\(|`' <(echo "$1") >/dev/null
+	if [[ $? == 0 ]]; then
+		echo "false"
+	else
+		echo "true"
+	fi
+}
+
+# First argument is the what to search to be able to source the variable
+# Second argument is the config path
+source_variable_if_correct() {
+	line_to_source="$(grep $1 $2)"
+	status=$(line_is_correct "${line_to_source}")
+	if [[ "${status}" == "true" ]]; then
+		source <(echo "${line_to_source}")
+	fi
+}
+
 snapshot_user() {
 	NOW=$(date +"%Y-%m-%d_%H:%M:%S")
 
@@ -7,21 +29,27 @@ snapshot_user() {
 	path_config="${user_dir}/.config/snapshot"
 
 	DIR_TO_SAVE="${user_dir}"
-	DIR_SNAPSHOT="$2"
+	DIR_SNAPSHOTS="$2"
 	IGNORE_DIRS=""
 
 	# Customize things (read from config)
+	if [[ -f "${path_config}" ]]; then
+		source_variable_if_correct "DIR_TO_SAVE=\'" "${path_config}"
+		source_variable_if_correct "DIR_SNAPSHOTS=\'" "${path_config}"
+		source_variable_if_correct "IGNORE_DIRS=\'" "${path_config}"
+	fi
 
-	if [[ -f "${DIR_SNAPSHOT}/.no" ]]; then
+	# Do not save if we are told not to
+	if [[ -f "${DIR_SNAPSHOTS}/.no" ]]; then
 		echo "Not saving user ${back_user}"
 		return
 	fi
 
-	if [[ ! -d "${DIR_SNAPSHOT}" ]]; then
-		mkdir -p "${DIR_SNAPSHOT}"
+	if [[ ! -d "${DIR_SNAPSHOTS}" ]]; then
+		mkdir -p "${DIR_SNAPSHOTS}"
 	fi
 
-	SNAPSHOT_PATH="${DIR_SNAPSHOT}/backup_${NOW}"
+	SNAPSHOT_PATH="${DIR_SNAPSHOTS}/backup_${NOW}"
 
 	echo "Saving ${DIR_TO_SAVE} to ${SNAPSHOT_PATH}"
 	/usr/bin/btrfs subvolume snapshot "${DIR_TO_SAVE}" "${SNAPSHOT_PATH}"
@@ -39,7 +67,16 @@ snapshot_user() {
 	rm -rf "${SNAPSHOT_PATH}/.cache/snapshots"
 }
 
-l_u="root $(ls /home)"
+# Take as argument the name of the user to run this script for,
+# or _all if we should run the script for all users.
+# Default to the user currently runing the script
+if [[ "$1" == "_all" ]]; then
+	l_u="root $(ls /home)"
+elif [[ "$1" != "" ]]; then
+	l_u="$1"
+else
+	l_u="${USER}"
+fi
 
 for back_user in $(echo -e "${l_u// /\\n}" | sort -u); do
 	# Default path
