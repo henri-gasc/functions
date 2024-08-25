@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# ----- # ----- # ----- # ----- # ----- # ----- #
+#                CAUTION ADVISED                #
+#                                               #
+#      This file is partially sourced when      #
+#         trying to access variables for        #
+#         the btrfs_snapshot.sh script.         #
+#     As such, please do not use multilines     #
+#     when defining variables. (We use grep     #
+#     to get the value and using multilines     #
+#           will cause some problems)           #
+#   There should be no problem as we are using  #
+# single quote and not double quote, but still, #
+#  be cautious. The program will not recognize  #
+#    your variables if you use double quote .   #
+# ----- # ----- # ----- # ----- # ----- # ----- #
+
+# Please do not use variables, relative path or #
+# other special symbols like ~/, ${HOME}, or .. #
+
+
+# Which dir is the btrfs subvolume (usually your 
+# home directory, default to it)
+# DIR_TO_SAVE='/home/[user]'
+
+# Where to save the snapshots. Can be anywhere
+# on the system (should be a place where you have
+# read access to allow to restore.
+# Default to ${HOME}/.cache/snapshots (again,
+# defining ${HOME} here will have no impact)
+# DIR_SNAPSHOTS='/home/[user]/.cache/snapshots'
+
+# A space separated list of files or directory to
+# remove from the snapshot once it is made.
+# Should be used on folders which content changes
+# often and is not very important (e.g. ~/.cache)
+# IMPORTANT: paths are relative to DIR_TO_SAVE
+# E.g.: for removing ~/.cache, with the default
+# DIR_TO_SAVE, you ony need .cache
+# The default for this variable is nothing
+# IGNORE_DIRS=''

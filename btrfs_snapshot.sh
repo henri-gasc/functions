@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Script takes one argument
+# To run this script every day, you should put the following
+# in /etc/anacrontab (without the comment obviously):
+# 1 1 make_snapshots /usr/local/bin/btrfs_snapshot
 
 # First argument is the line to verify
 line_is_correct() {
