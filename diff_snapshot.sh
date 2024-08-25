@@ -1,7 +1,30 @@
 #!/bin/bash
 
+# Copy-paste of the functions in btrfs_snapshot.sh
+line_is_correct() {
+	grep -E '\$\(|<\(|`' <(echo "$1") >/dev/null
+	if [[ $? == 0 ]]; then
+		echo "false"
+	else
+		echo "true"
+	fi
+}
+source_variable_if_correct() {
+	line_to_source="$(grep $1 $2)"
+	status=$(line_is_correct "${line_to_source}")
+	if [[ "${status}" == "true" ]]; then
+		source <(echo "${line_to_source}")
+	fi
+}
+
+# First argument, folder to get the list of files from
+# Second argument, file to put the list in
 search_and_replace() {
-  tmp_file="/tmp/snapshot_tmp_file"
+	IGNORE_DIRS=""
+	source_variable_if_correct "IGNORE_DIRS=\'" "${HOME}/.config/snapshot"
+
+	tmp_file="/tmp/snapshot_tmp_file"
+	rm "${tmp_file}"
 	if [ -f "$2" ] && [ "$2" != "/tmp/current" ]; then
 		echo "$1 is already done"
 	else
@@ -9,9 +32,14 @@ search_and_replace() {
 		echo "  Done searching"
 		sed -e "s#^$1/#/#g" "${tmp_file}" -i
 		echo "  Done replacing in ${tmp_file}"
+		if [[ IGNORE_DIRS != "" ]]; then
+			forbidden="$(echo $IGNORE_DIRS | sed -e 's/ /\|/g')"
+			rg -v "${forbidden}" "${tmp_file}" > "${tmp_file}_filter_again"
+			mv "${tmp_file}_filter_again" "${tmp_file}"
+		fi
 		sort -o "${tmp_file}" "${tmp_file}"
 		echo "  Done sorting"
-    mv "${tmp_file}" "$2"
+		mv "${tmp_file}" "$2"
 	fi
 }
 
