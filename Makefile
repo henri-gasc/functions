@@ -8,6 +8,7 @@ system_sh:
 	cp clean_git.sh $(PREFIX_SYSTEM)/clean_git
 	cp update_git.sh $(PREFIX_SYSTEM)/update_git
 	cp launch_steam.sh $(PREFIX_SYSTEM)/launch_steam
+	cp commit_daily.sh $(PREFIX_SYSTEM)/commit_daily
 
 local_sh:
 	cp change_brightness.sh $(PREFIX)/change_brightness
