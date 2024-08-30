@@ -19,8 +19,8 @@ line_is_correct() {
 # Second argument is the config path
 source_variable_if_correct() {
 	line_to_source="$(grep $1 $2)"
-	status=$(line_is_correct "${line_to_source}")
-	if [[ "${status}" == "true" ]]; then
+	okay=$(line_is_correct "${line_to_source}")
+	if [[ "${okay}" == "true" ]]; then
 		source <(echo "${line_to_source}")
 	fi
 }
@@ -37,9 +37,9 @@ snapshot_user() {
 
 	# Customize things (read from config)
 	if [[ -f "${path_config}" ]]; then
-		source_variable_if_correct "DIR_TO_SAVE=\'" "${path_config}"
-		source_variable_if_correct "DIR_SNAPSHOTS=\'" "${path_config}"
-		source_variable_if_correct "IGNORE_DIRS=\'" "${path_config}"
+		source_variable_if_correct "DIR_TO_SAVE='" "${path_config}"
+		source_variable_if_correct "DIR_SNAPSHOTS='" "${path_config}"
+		source_variable_if_correct "IGNORE_DIRS='" "${path_config}"
 	fi
 
 	# Do not save if we are told not to

@@ -11,8 +11,8 @@ line_is_correct() {
 }
 source_variable_if_correct() {
 	line_to_source="$(grep $1 $2)"
-	status=$(line_is_correct "${line_to_source}")
-	if [[ "${status}" == "true" ]]; then
+	okay=$(line_is_correct "${line_to_source}")
+	if [[ "${okay}" == "true" ]]; then
 		source <(echo "${line_to_source}")
 	fi
 }
@@ -21,10 +21,10 @@ source_variable_if_correct() {
 # Second argument, file to put the list in
 search_and_replace() {
 	IGNORE_DIRS=""
-	source_variable_if_correct "IGNORE_DIRS=\'" "${HOME}/.config/snapshot"
+	source_variable_if_correct "IGNORE_DIRS='" "${HOME}/.config/snapshot"
 
 	tmp_file="/tmp/snapshot_tmp_file"
-	rm "${tmp_file}"
+	rm -f "${tmp_file}"
 	if [ -f "$2" ] && [ "$2" != "/tmp/current" ]; then
 		echo "$1 is already done"
 	else
@@ -32,7 +32,7 @@ search_and_replace() {
 		echo "  Done searching"
 		sed -e "s#^$1/#/#g" "${tmp_file}" -i
 		echo "  Done replacing in ${tmp_file}"
-		if [[ IGNORE_DIRS != "" ]]; then
+		if [[ "${IGNORE_DIRS}" != "" ]]; then
 			forbidden="$(echo $IGNORE_DIRS | sed -e 's/ /\|/g')"
 			rg -v "${forbidden}" "${tmp_file}" > "${tmp_file}_filter_again"
 			mv "${tmp_file}_filter_again" "${tmp_file}"
@@ -69,20 +69,18 @@ second_folder="$1"
 out_2="/tmp/snapshot_$(basename ${second_folder})"
 
 filter() {
-	rg -v '/CachedData/|/Cache_Data/|/\.config/VSCodium/|/\.vscode-oss/extensions/' | \
+	rg -v '/CachedData/|/Cache_Data/|/\.vscode-oss/extensions/' | \
 	rg -v '/__pycache__/|/\.mypy_cache/|/venv/|/.env/' | \
 	rg -v '/node_modules/|/\.npm/' | \
 	rg -v '/\.cargo/advisory-db/|/\.cargo/registry/|/\.cargo/git/' | \
 	rg -v '/\.wine/|/\.julia/|/\.nuget/|/\.mapscii/|/\.m2/repository/|/\.docker/' | \
-	rg -v '/\.local/share/Trash/|/\.local/share/okular/' | \
-	rg -v '/\.local/share/nvim/|/\.local/share/zed|/\.local/share/Steam' | \
+	rg -v '/\.local/share/' | \
 	rg -v '/\.mozilla/|/\.thunderbird/|/RecentDocuments/' | \
-	rg -v '/\.config/Signal/attachments/' | \
-	rg -v '/\.config/libreoffice/' | \
 	rg -v '/target/build|/target/release/|/target/debug/|/build/' | \
 	rg -v '/\.local/state/' | \
 	rg -v '/mangas/.*/[0-9]*' | \
 	rg -v '/Documents/Gentoo/gentoo/|/Documents/Gentoo/GURU/' | \
+	rg -v 'config/Signal/|config/libreoffice/|config/VSCodium/' | \
 	rg -v '/tmp/'
 }
 
