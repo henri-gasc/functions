@@ -76,7 +76,7 @@ filter() {
 	rg -v '/\.wine/|/\.julia/|/\.nuget/|/\.mapscii/|/\.m2/repository/|/\.docker/' | \
 	rg -v '/\.local/share/' | \
 	rg -v '/\.mozilla/|/\.thunderbird/|/RecentDocuments/' | \
-	rg -v '/target/build|/target/release/|/target/debug/|/build/' | \
+	rg -v '/target/|/build/' | \
 	rg -v '/\.local/state/' | \
 	rg -v '/mangas/.*/[0-9]*' | \
 	rg -v '/Documents/Gentoo/gentoo/|/Documents/Gentoo/GURU/' | \
