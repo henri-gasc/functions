@@ -20,6 +20,7 @@ local_sh:
 	cp toggle_screen.sh $(PREFIX)/toggle_screen
 	cp toggle_screen.sh $(PREFIX)/toggle_screen
 	cp take_screenshot.sh $(PREFIX)/take_screenshot
+	cp git-fetch-allbranches.sh $(PREFIX)/git-fetch-allbranches
 
 local_python:
 	cp pyebuild.py $(PREFIX)/pyebuild
