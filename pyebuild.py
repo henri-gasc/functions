@@ -330,6 +330,14 @@ def search_dir(directory: str) -> list[str]:
         print(f"ignoring {directory}, not a file nor a directory")
     return files
 
+def find_backend(system: dict[str, Any]) -> str:
+    if "build-backend" in system.keys():
+        return str(system["build-backend"])
+    elif "requires" in system.keys():
+        for t in ["setuptools", "flit", "poetry"]:
+            if t in system["requires"]:
+                return t
+    raise KeyError(f"Could not find the backend from {system}")
 
 if len(sys.argv) == 1:
     d = "."
@@ -342,7 +350,7 @@ if len(files) == 0:
 for f in files:
     with open(f, "rb") as file:
         tom = tomllib.load(file)
-    back = tom["build-system"]["build-backend"]
+    back = find_backend(tom["build-system"])
     ebuild: Optional[Ebuild] = None
     if back == "poetry.core.masonry.api":
         ebuild = Poetry(f)
