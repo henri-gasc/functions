@@ -334,9 +334,13 @@ def find_backend(system: dict[str, Any]) -> str:
     if "build-backend" in system.keys():
         return str(system["build-backend"])
     elif "requires" in system.keys():
-        for t in ["setuptools", "flit", "poetry"]:
-            if t in system["requires"]:
-                return t
+        poss = system["requires"]
+        if "setuptools" in poss:
+            return "setuptools.build_meta"
+        elif "flit" in poss:
+            return "flit_core.buildapi"
+        elif "poetry" in poss:
+            return "poetry.core.masonry.api"
     raise KeyError(f"Could not find the backend from {system}")
 
 if len(sys.argv) == 1:
