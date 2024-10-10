@@ -303,16 +303,18 @@ class SetupTools(Ebuild):
         super().__init__(path_to_pyprojectdottoml, path_to_setupcfg=setup_cfg)
 
     def extract_toml(self) -> None:
-        toml = self.toml["metadata"]
-        self.name = toml["name"]
         self.tool = "setuptools"
-        self.description = toml["description"]
-        self.license = toml["license"]
-        self.define_source(toml)
+        if "metadata" in self.toml.keys():
+            toml = self.toml["metadata"]
+            self.name = toml["name"]
+            self.description = toml["description"]
+            self.license = toml["license"]
+            self.define_source(toml)
         self.bdepend[""] = self.get_dependencies(self.toml["build-system"]["requires"])
-        self.bdepend["extra"] = self.get_dependencies(
-            [self.toml["options"]["extras_require"]["dev"]]
-        )
+        if "options" in self.toml.keys():
+            self.bdepend["extra"] = self.get_dependencies(
+                [self.toml["options"]["extras_require"]["dev"]]
+            )
 
 
 def search_dir(directory: str) -> list[str]:
