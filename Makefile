@@ -18,7 +18,7 @@ local_sh:
 	cp get_lock.sh $(PREFIX)/get_lock
 	cp get_screen.sh $(PREFIX)/get_screen
 	cp toggle_screen.sh $(PREFIX)/toggle_screen
-	cp toggle_screen.sh $(PREFIX)/toggle_screen
+	cp toggle_lock.sh $(PREFIX)/toggle_lock
 	cp take_screenshot.sh $(PREFIX)/take_screenshot
 	cp git-fetch-allbranches.sh $(PREFIX)/git-fetch-allbranches
 
